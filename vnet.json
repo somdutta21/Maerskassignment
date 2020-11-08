@@ -4,7 +4,7 @@
     "parameters": {
       "vnetName": {
         "type": "string",
-        "defaultValue": "Vnet for the assign",
+        "defaultValue": "server-vnet",
         "metadata": {
           "description": "VNet name"
         }
@@ -51,6 +51,12 @@
               "[parameters('vnetAddressPrefix')]"
             ]
           },
+           "dhcpOptions": {
+                    "dnsServers": [
+                        "30.30.0.4"
+                    ]
+                }
+        },
         "resources": [
           {
             "apiVersion": "2018-10-01",
@@ -68,3 +74,4 @@
       }
     ]
   }
+
