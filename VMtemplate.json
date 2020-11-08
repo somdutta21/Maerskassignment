@@ -15,7 +15,7 @@
       "type": "string",
       "maxLength": 15,
       "metadata": {
-        "description": "Name of the  DB VM to be created"
+        "description": "Name of the VM to be created"
       }
     },
     "AdminUserName": {
@@ -60,10 +60,10 @@
     "VNETSubnetName": {
       "type": "string",
       "metadata": {
-        "description": "DB Subnet"
+        "description": "Subnet1"
       },
       "allowedValues": [
-        "Mention DB Subnet"
+        "Subnet1"
       ]
     },
     "availabilitySetName": {
@@ -72,7 +72,7 @@
         "description": "Availability Set for the VM to be added"
       },
       "allowedValues": [
-        "name of availability set of DB"
+        "name of availability set"
       ]
     },
     "diagStorageAccount": {
@@ -89,7 +89,7 @@
     "availabilitySetPlatformUpdateDomainCount": "3",
     "OSPublisherValue": "RedHat",
     "OSOfferValue": "RHEL",
-    "OSSkuValue": "7.4",
+    "OSSkuValue": "8.4",
     "NSGName": "name of nsg",
     "availabilitysetrefid": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySetName'))]",
     "vnetID": "[resourceId(parameters('virtualNetworkResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('VirtualNetworkName'))]",
@@ -156,7 +156,7 @@
           {
             "name": "MySQL",
             "properties": {
-              "description": "Allow Tomcat incoming requests",
+              "description": "database port",
               "protocol": "Tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "3306",
