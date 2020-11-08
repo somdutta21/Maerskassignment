@@ -1,0 +1,226 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Location of the Resource Build"
+      },
+      "allowedValues": [
+        "West India"
+      ]
+    },
+    "virtualMachineName": {
+      "type": "string",
+      "maxLength": 15,
+      "metadata": {
+        "description": "Name of the  DB VM to be created"
+      }
+    },
+    "AdminUserName": {
+      "type": "string",
+      "metadata": {
+        "description": "Username for the Virtual Machine"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password for the Virtual Machine"
+      }
+    },
+    "virtualMachineSize": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_A4_v2"
+      ],
+      "metadata": {
+        "description": "Virtual Machine Size"
+      }
+    },
+    "VirtualNetworkResourceGroup": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource Group where the Virtual Network exists"
+      },
+      "allowedValues": [
+        "Resource group name"
+      ]
+    },
+    "VirtualNetworkName": {
+      "type": "string",
+      "metadata": {
+        "description": "Virtual Network for the VM Deployment"
+      },
+      "allowedValues": [
+        "name of virtual network"
+      ]
+    },
+    "VNETSubnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "DB Subnet"
+      },
+      "allowedValues": [
+        "Mention DB Subnet"
+      ]
+    },
+    "availabilitySetName": {
+      "type": "string",
+      "metadata": {
+        "description": "Availability Set for the VM to be added"
+      },
+      "allowedValues": [
+        "name of availability set of DB"
+      ]
+    },
+    "diagStorageAccount": {
+      "type": "string",
+      "metadata": {
+        "description": "Diagnostics Storage Account for the VM"
+      },
+      "defaultValue": "name of diagnostic account"
+    }
+  },  
+  "variables": {
+    "VMNicName": "[concat(parameters('virtualMachineName'),'-nic')]",
+       "availabilitySetPlatformFaultDomainCount": "2",
+    "availabilitySetPlatformUpdateDomainCount": "3",
+    "OSPublisherValue": "RedHat",
+    "OSOfferValue": "RHEL",
+    "OSSkuValue": "7.4",
+    "NSGName": "name of nsg",
+    "availabilitysetrefid": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySetName'))]",
+    "vnetID": "[resourceId(parameters('virtualNetworkResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('VirtualNetworkName'))]",
+    "subnetRef": "[concat(variables('vnetID'), '/subnets/', parameters('VNETSubnetName'))]"
+  },
+  "resources": [
+        {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('VMNicName')]",
+      "apiVersion": "2019-04-01",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+               "[concat('Microsoft.Network/networkSecurityGroups/', variables('NSGName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+                           
+              "subnet": {
+                "id": "[variables('subnetRef')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+        {
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[parameters('availabilitySetName')]",
+      "apiVersion": "2019-04-01",
+      "location": "[parameters('location')]",
+      "properties": {
+        "platformFaultDomainCount": "[variables('availabilitySetPlatformFaultDomainCount')]",
+        "platformUpdateDomainCount": "[variables('availabilitySetPlatformUpdateDomainCount')]"
+      },
+      "sku": {
+        "name": "Aligned"
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('NSGName')]",
+      "apiVersion": "2019-04-01",
+      "location": "[parameters('location')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "SSH-rule",
+            "properties": {
+              "description": "Allow SSH",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "Mention IP you are expecting traffic from",
+              "destinationAddressPrefix": "specify address of Vm",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "MySQL",
+            "properties": {
+              "description": "Allow Tomcat incoming requests",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3306",
+              "sourceAddressPrefix": "Mention APP Subnet",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 1000,
+              "direction": "Inbound"
+            }
+	  }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[parameters('virtualMachineName')]",
+      "apiVersion": "2019-04-01",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', variables('VMNicName'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('virtualMachineSize')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('OSPublisherValue')]",
+            "offer": "[variables('OSOfferValue')]",
+            "sku": "[variables('OSSkuValue')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "[concat(parameters('virtualMachineName'), '-osDisk')]",
+            "caching": "ReadWrite",
+            "managedDisk": {
+              "storageAccountType": "Premium_LRS"
+            },
+            "createOption": "FromImage"
+          }
+        },
+        "osProfile": {
+          "computerName": "[parameters('virtualMachineName')]",
+          "adminUsername": "[parameters('AdminUserName')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('VMNicName'))]"
+            }
+          ]
+        },
+        "availabilitySet": {
+          "id": "[variables('availabilitysetrefid')]"
+        },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": true,
+            "storageUri": "[concat('https://', parameters('diagStorageAccount'), '.blob.core.windows.net')]"
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {}
+}
