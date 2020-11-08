@@ -1,0 +1,29 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "existingVNETName": {
+      "value": "vnet"
+    },
+    "existingSubnetName": {
+      "value": "subnet1"
+    },
+    "existingVNETRG":{
+        "value": "as required"
+    },
+    "vmSize": {
+        "value": "Standard_A4_v2"
+      },
+      
+    "adminUsername": {
+      "value": "adminUsername"
+    },
+    "adminPassword": {
+        "reference": {
+            "keyVault": {
+              "id": "/subscriptions/xxxxxxxx subscription ID xxxxxxxx/resourceGroups/Resourcegroupname/providers/Microsoft.KeyVault/vaults/keyvaultname"
+            },
+            "secretName": "adminPassword"
+          }
+      }
+  }
