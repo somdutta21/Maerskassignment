@@ -21,3 +21,122 @@ automated using Azure DevOps using IaC(Infrastructure as Code).
 4) Create a sample ARM template you will use to deploy a Windows VM of any size
 5) Explain how will you access the password stored in Key Vault and use it as Admin Password in the VM
 ARM template.
+
+
+
+Solution:
+
+The IaaC assumes that you have a Storage account and a Resource group  which are necessary for creating any resource in Azure.  If not available the following powershell scripts will do the needful.
+
+ New-AzureRmResourceGroup -Name NameofResourceGroup -Location "Locationofresource" ---> Creates a resource group
+
+New-AzureRmStorageAccount -ResourceGroupName  NameofResourceGroup   -AccountName nameofstorageaccount -Location  Locationofresource  -SkuName Standard_LRS -Kind BlobStorage -AccessTier Hot
+
+The above command will create a storage account in the mentioned resource group and location of the datacenter. By SKU we refer to the type of replication that Azure will do from there end.I have kept it as Standard LRS: Local Redundant Storage ie Azure will take 3 copies of your data and keep them in the same region across different data centers. The Access tier is Hot for frequently accessed data. For infrequently accessed data we should go for cool.
+
+For Automated deployments we will be using Azure Devops.
+
+If required we can also manually deploy the template perform the following task:
+
+Azure Portal --> All Services--> Deploy a customTemplate ---> Edit parameters accordingly.
+
+
+1) What are different artifacts you need to create - name of the artifacts and its purpose
+
+Github/Azure repos - to store the arm templates
+Azure Resource Group
+Azure Storage account -
+Vnet 
+Azure Devops Organization and Project
+Azure Key vault 
+
+2) List the tools you will to create and store the ARM templates.
+
+Azure Repos/ GITHUB 
+Powershell (Cloud Shell will do else the Powershell module needs to be installed locally and we need to do a SSO)
+Visual Studio (recommended but not necessary)
+
+3) Explain the process and steps to create automated deployment pipeline.
+
+Sign in to Azure DevOps 
+click the “New Project” button. ---> Project Name
+Repos ---> Import a repo ---> connect with Github
+Now we create a build pipeline:
+Select Source --> Github--> Classic editor/Github Yaml(We will select the classic Editor which does not require a yml file) --> Empty Job (A new Build Pipeline and Agent will be created)
+
+Add Task (using + sign on the pipeline)---> search ARM ---> 
+
+Enter the following information for Task.
+Display Name: 
+Azure Subscription: 
+Action: 
+Resource Group: 
+Location: 
+Template: 
+Parameter:
+
+Create multiple tasks by repeating the same steps using the other ARM templates
+
+Run Build 
+
+Check Resources
+
+4) Create a sample ARM template you will use to deploy a Windows VM of any size
+
+Provided in the Repo
+
+5) Explain how will you access the password stored in Key Vault and use it as Admin Password in the VM
+ARM template.
+
+Using a Managed Access Identity: 
+
+The below staps should do the job
+
+
+Create a Keyvault:
+
+Open the Azure portal
+
+At the top of the left navigation bar, select Create a resource
+
+In the Search the Marketplace box type in Key Vault and hit Enter.  
+
+Select Key Vault from the results.
+
+Select Create
+
+Provide a Name for the new Key Vault.
+
+Grant Access:
+
+Navigate to your newly created Key Vault
+
+Select Access Policy from the menu on the left side.
+
+Select Add Access Policy
+
+In the Add access policy section under Configure from template (optional) choose Secret Management from the pull-down menu.
+
+Choose Select Principal, and in the search field enter the name of the VM you created earlier.  Select the VM in the result list and choose Select.
+
+Select Add
+
+Select Save.
+
+Create a Secret:
+
+Navigate to your newly created Key Vault.
+
+Select Secrets, and click Add.
+
+Select Generate/Import
+
+In the Create a secret screen from Upload options leave Manual selected.
+
+Enter a name and value for the secret.  The value can be anything you want. 
+
+Leave the activation date and expiration date clear, and leave Enabled as Yes. 
+
+Click Create to create the secret.
+
+Find the URI of the secrets and that should be used in the parameters section of the arm templates
