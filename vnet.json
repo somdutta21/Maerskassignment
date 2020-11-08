@@ -4,7 +4,7 @@
     "parameters": {
       "vnetName": {
         "type": "string",
-        "defaultValue": "server-vnet",
+        "defaultValue": "Vnet",
         "metadata": {
           "description": "VNet name"
         }
@@ -25,7 +25,7 @@
       },
       "subnet1Name": {
         "type": "string",
-        "defaultValue": "Servers",
+        "defaultValue": "Subnet1",
         "metadata": {
           "description": "Subnet 1 Name"
         }
