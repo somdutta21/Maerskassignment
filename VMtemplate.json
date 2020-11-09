@@ -140,12 +140,12 @@
       "properties": {
         "securityRules": [
           {
-            "name": "SSH-rule",
+            "name": "RDP-rule",
             "properties": {
-              "description": "Allow SSH",
+              "description": "Allow RDP",
               "protocol": "Tcp",
               "sourcePortRange": "*",
-              "destinationPortRange": "22",
+              "destinationPortRange": "3389",
               "sourceAddressPrefix": "Mention IP you are expecting traffic from",
               "destinationAddressPrefix": "specify address of Vm",
               "access": "Allow",
